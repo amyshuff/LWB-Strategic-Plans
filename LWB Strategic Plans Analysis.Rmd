@@ -26,3 +26,25 @@ library(readxl)
 library(pdftools)
 
 ```
+
+```{r PDF Import, include=FALSE}
+
+# PDF Strategic Plans
+# Import all pdf files
+pdf.file.list <- list.files(pattern='*.pdf', recursive = TRUE)
+pdf.list <- sapply(pdf.file.list, pdf_text, simplify = FALSE, USE.NAMES = TRUE)
+
+# pdf.file.list
+# pdf.list
+
+
+# File names to be joined with data later
+pdf.names <- data.frame(pdf.file.list) %>% 
+  mutate("Board Number" = row_number())
+
+# UPDATE: row numbers are not matching board numbers like they should
+
+```
+
+
+
