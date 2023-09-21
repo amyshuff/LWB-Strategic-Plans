@@ -1,0 +1,28 @@
+---
+title: "LWB Strategic Plans"
+author: "Amy Shuff"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+
+``` {r, results='hide'}
+
+# Only do this once:
+# install.packages(c('knitr', 'usethis', 'tidyverse', 'janitor', 'reshape2', 'stringr', 'here', 'readxl', 'pdftools'))
+
+library(knitr)
+library(usethis)
+library(tidyverse)
+library(janitor)
+library(reshape2)
+library(stringr)
+library(here)
+library(readxl)
+library(pdftools)
+
+```
