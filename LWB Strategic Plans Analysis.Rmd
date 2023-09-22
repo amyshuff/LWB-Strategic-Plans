@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ``` {r, results='hide'}
 
 # Only do this once:
-# install.packages(c('knitr', 'usethis', 'tidyverse', 'janitor', 'reshape2', 'stringr', 'here', 'readxl', 'pdftools'))
+# install.packages(c('knitr', 'usethis', 'tidyverse', 'janitor', 'reshape2', 'stringr', 'here', 'readxl', 'pdftools', 'tidytext'))
 
 library(knitr)
 library(usethis)
@@ -24,6 +24,7 @@ library(stringr)
 library(here)
 library(readxl)
 library(pdftools)
+library(tidytext)
 
 ```
 
@@ -42,8 +43,74 @@ pdf.list <- sapply(pdf.file.list, pdf_text, simplify = FALSE, USE.NAMES = TRUE)
 pdf.names <- data.frame(pdf.file.list) %>% 
   mutate("Board Number" = row_number())
 
-# UPDATE: row numbers are not matching board numbers like they should
 
+```
+
+
+
+
+
+
+
+
+
+
+```{r tidytext, include=FALSE}
+
+
+
+pdf_df <- tibble(text = pdf.list[["2023 Strategic Plans/101 Panhandle 2023.pdf"]]) %>%
+  unnest_tokens(word, text) %>%
+  mutate(board = "2023 Strategic Plans/101 Panhandle 2023.pdf")
+
+
+pdf.list <- list()
+
+# pdf.list[["2023 Strategic Plans/101 Panhandle 2023.pdf"]]
+
+
+
+
+for(pdf in 1:max(row_number(pdf.file.list))){
+  
+  pdf %>%
+# We need to specify the name of the column to be created (Word) and the source column (Text)
+  unnest_tokens("Word", "Text") 
+  
+ypqi.list[[pdf]] <- ypqi.data_table
+
+}
+
+
+ypqi <- bind_rows(list(ypqi.list), .id = "Site") %>% 
+  mutate(Site = as.numeric(Site)) %>% 
+  # Join data with file names
+  full_join(ypqi.names, by = "Site") %>% 
+  na.omit()
+
+```
+
+
+
+
+
+
+
+
+
+```{r PDF Import, include=FALSE}
+  # ypqi.pdf_table <- map(pdf.list[[pdf]], ~ str_split(.x, "\n") %>% unlist())
+  # #specify the start and end of the table data
+  # ypqi.table <- ypqi.pdf_table[[4]][(str_which(ypqi.pdf_table[[4]], "Score Set 1")):(str_which(ypqi.pdf_table[[4]], "The"))] # Summary Report is on pg 4
+  # #Build the table and remove special characters
+  # ypqi.table <- str_replace_all(ypqi.table," \\s+ ", "|")
+  # ypqi.data_table <- read.csv(textConnection(ypqi.table), sep = "|")
+  # #Create a list of column names
+  # colnames(ypqi.data_table)<- c("Measure", "Score")
+  # 
+  # ypqi.data_table <- ypqi.data_table %>% 
+  # mutate(Score = as.numeric(Score),
+  #        Data = "YPQI")
 ```
 
 
