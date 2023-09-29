@@ -42,15 +42,18 @@ pdf.list <- sapply(pdf.file.list, pdf_text, simplify = FALSE, USE.NAMES = TRUE)
 # File names to be joined with data later
 pdf.names <- data.frame(pdf.file.list) %>% 
   mutate("Board Number" = row_number())
+  
+pdf.names <- pdf.names %>% 
+  cbind(., Region = c("Panhandle", "South Plains", "North Texas", "North Central Texas", "Tarrant County", "Greater Dallas", "Northeast Texas", "East Texas", "West Central Texas", "Borderplex", "Permian-Basin", "Concho Valley", "Heart of Texas", "Capital Area", "Rural Capital Area", "Brazos Valley", "Deep East Texas", "Southeast Texas", "Golden Crescent", "Alamo", "South Texas", "Coastal Bend", "Lower Rio Grande Valley", "Cameron", "Texoma", "Central Texas", "Middle Rio Grande", "Gulf Coast")) 
+
+pdf.names <- pdf.names %>% 
+  mutate (
+    Year = ifelse(endsWith(pdf.names$pdf.file.list, "2021.pdf"), "2021", ""),
+    Year = ifelse(endsWith(pdf.names$pdf.file.list, "2023.pdf"), "2023", Year)
+  )
 
 
 ```
-
-
-
-
-
-
 
 
 
@@ -59,34 +62,42 @@ pdf.names <- data.frame(pdf.file.list) %>%
 
 
 
-pdf_df <- tibble(text = pdf.list[["2023 Strategic Plans/101 Panhandle 2023.pdf"]]) %>%
-  unnest_tokens(word, text) %>%
-  mutate(board = "2023 Strategic Plans/101 Panhandle 2023.pdf")
+pdf_df <- tibble(Text = pdf.list[["2023 Strategic Plans/101 Panhandle 2023.pdf"]]) %>%
+  unnest_tokens(Word, Text) %>%
+  mutate(
+    pdf.file.list = "2023 Strategic Plans/101 Panhandle 2023.pdf")
 
+pdf_df <- pdf_df %>% full_join(pdf.names)
 
-pdf.list <- list()
 
 # pdf.list[["2023 Strategic Plans/101 Panhandle 2023.pdf"]]
 
 
-
+word.list <- list()
 
 for(pdf in 1:max(row_number(pdf.file.list))){
   
-  pdf %>%
-# We need to specify the name of the column to be created (Word) and the source column (Text)
-  unnest_tokens("Word", "Text") 
-  
-ypqi.list[[pdf]] <- ypqi.data_table
+    pdf_df <- tibble(Text = pdf.list[[pdf]]) %>%
+      unnest_tokens(Word, Text) %>%
+      mutate(
+        pdf.file.list = paste(pdf))
+    
+    word.list[[pdf]] <- pdf_df
+    
+    }
 
-}
+# UPDATE: Board 11 is not a pdf with select-able text
 
 
-ypqi <- bind_rows(list(ypqi.list), .id = "Site") %>% 
-  mutate(Site = as.numeric(Site)) %>% 
-  # Join data with file names
-  full_join(ypqi.names, by = "Site") %>% 
-  na.omit()
+
+words <- bind_rows(list(word.list), .id = "Board Number") %>%
+    mutate("Board Number" = as.numeric("Board Number")) 
+
+# UPDATE: Board Number is not behaving properly with as.numeric
+
+# %>% 
+#     full_join(pdf.names, by = "Board Number")
+
 
 ```
 
@@ -98,19 +109,8 @@ ypqi <- bind_rows(list(ypqi.list), .id = "Site") %>%
 
 
 
-```{r PDF Import, include=FALSE}
-  # ypqi.pdf_table <- map(pdf.list[[pdf]], ~ str_split(.x, "\n") %>% unlist())
-  # #specify the start and end of the table data
-  # ypqi.table <- ypqi.pdf_table[[4]][(str_which(ypqi.pdf_table[[4]], "Score Set 1")):(str_which(ypqi.pdf_table[[4]], "The"))] # Summary Report is on pg 4
-  # #Build the table and remove special characters
-  # ypqi.table <- str_replace_all(ypqi.table," \\s+ ", "|")
-  # ypqi.data_table <- read.csv(textConnection(ypqi.table), sep = "|")
-  # #Create a list of column names
-  # colnames(ypqi.data_table)<- c("Measure", "Score")
-  # 
-  # ypqi.data_table <- ypqi.data_table %>% 
-  # mutate(Score = as.numeric(Score),
-  #        Data = "YPQI")
+```{r, include=FALSE}
+
 ```
 
 
