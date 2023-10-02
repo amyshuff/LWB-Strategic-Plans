@@ -28,6 +28,15 @@ library(tidytext)
 
 ```
 
+# Methodology
+
+Each one of the 28 Texas Local Workforce Boards' (LWBs) Strategic Plans were downloaded.
+
+https://www.twc.texas.gov/agency/workforce-development-boards
+
+Questions I have: 
+- Should it be called a Workforce Innovation & Opportunity Act (WIOA) plan instead?
+
 ```{r PDF Import, include=FALSE}
 
 # PDF Strategic Plans
@@ -41,7 +50,7 @@ pdf.list <- sapply(pdf.file.list, pdf_text, simplify = FALSE, USE.NAMES = TRUE)
 
 # File names to be joined with data later
 pdf.names <- data.frame(pdf.file.list) %>% 
-  mutate("Board Number" = row_number())
+  mutate(Board = row_number())
   
 pdf.names <- pdf.names %>% 
   cbind(., Region = c("Panhandle", "South Plains", "North Texas", "North Central Texas", "Tarrant County", "Greater Dallas", "Northeast Texas", "East Texas", "West Central Texas", "Borderplex", "Permian-Basin", "Concho Valley", "Heart of Texas", "Capital Area", "Rural Capital Area", "Brazos Valley", "Deep East Texas", "Southeast Texas", "Golden Crescent", "Alamo", "South Texas", "Coastal Bend", "Lower Rio Grande Valley", "Cameron", "Texoma", "Central Texas", "Middle Rio Grande", "Gulf Coast")) 
@@ -55,22 +64,10 @@ pdf.names <- pdf.names %>%
 
 ```
 
+- Currently, I need to verify that I have the 2-year modification plans for East Texas, Southeast Texas, South Texas, and Texoma. From looking at their files, I could not see that what I have is updated and not the 2021 version.
 
 
-
-```{r tidytext, include=FALSE}
-
-
-
-pdf_df <- tibble(Text = pdf.list[["2023 Strategic Plans/101 Panhandle 2023.pdf"]]) %>%
-  unnest_tokens(Word, Text) %>%
-  mutate(
-    pdf.file.list = "2023 Strategic Plans/101 Panhandle 2023.pdf")
-
-pdf_df <- pdf_df %>% full_join(pdf.names)
-
-
-# pdf.list[["2023 Strategic Plans/101 Panhandle 2023.pdf"]]
+```{r Unnest words tidytext, include=FALSE}
 
 
 word.list <- list()
@@ -78,7 +75,7 @@ word.list <- list()
 for(pdf in 1:max(row_number(pdf.file.list))){
   
     pdf_df <- tibble(Text = pdf.list[[pdf]]) %>%
-      unnest_tokens(Word, Text) %>%
+      unnest_tokens(word, Text) %>%
       mutate(
         pdf.file.list = paste(pdf))
     
@@ -89,29 +86,95 @@ for(pdf in 1:max(row_number(pdf.file.list))){
 # UPDATE: Board 11 is not a pdf with select-able text
 
 
+# Turn list into data frame
 
-words <- bind_rows(list(word.list), .id = "Board Number") %>%
-    mutate("Board Number" = as.numeric("Board Number")) 
+# words <- bind_rows(list(word.list), .id = "Board") %>% 
+#   select(Word, Board)
+# 
+# words <- words %>% 
+#   mutate(Board = as.numeric(Board)) 
+# 
+# words <- words %>%
+#   full_join(pdf.names, by = "Board")
 
-# UPDATE: Board Number is not behaving properly with as.numeric
 
-# %>% 
-#     full_join(pdf.names, by = "Board Number")
+words <- bind_rows(list(word.list), .id = "Board") %>% 
+  select(word, Board) %>% 
+  mutate(Board = as.numeric(Board)) %>%
+  full_join(pdf.names, by = "Board")
 
 
 ```
 
+- I also ran into trouble with the Permian-Basin file because it looks like a scanned copy, imported as a picture to pdf, instead of text. Need to either aquire the origional pdf from them or convert this one to text.
 
+The TidyText R package is being utilized for this analysis: https://www.tidytextmining.com/tidytext
 
+After importing all the PDFs' text into R, stop words (common words such as "it", "the", "to", etc.) were removed. 
 
+- I'm wondering if I should also remove numbers? 0 is one of the most frequently used words.
 
+```{r, Stop Words, include=FALSE}
 
+# Stop words are words that are not useful for an analysis, typically extremely common words such as “the”, “of”, “to”, and so forth in English. We can remove stop words here
+data(stop_words) 
 
+# But I don't want to remove young or work (lexicon = onix)
+# Should I keep SMART, snowball, or both?
+stop_words <- stop_words %>% 
+  filter(lexicon == "SMART")
 
-
-```{r, include=FALSE}
+words <- words %>%
+  anti_join(stop_words)
 
 ```
 
+I then performed a word count.
 
+```{r}
+
+word.count <- words %>% 
+  count(word, sort = TRUE)
+  
+word.count.25 <- word.count %>% 
+  head(., 25)
+
+kable(word.count.25,
+  caption = "25 Most Frequently Used Words"
+)
+
+# UPDATE: add in rank #s
+
+word.count.25 %>% 
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word)) +
+  geom_col() +
+  labs(y = NULL)
+  
+
+```
+
+Youth is the 22nd most used word. "Youngesters" was used by North Texas twice.
+
+```{r}
+
+word.count.region <- words %>% 
+  group_by(Region) %>% 
+  count(word, sort = TRUE) %>% 
+  pivot_wider(names_from = Region, values_from = n) %>% 
+  full_join(., word.count) %>% 
+  arrange(desc(n)) %>% 
+  head(., 25)
+
+kable(word.count.region,
+  caption = "Most Frequently Used Words by Region"
+)
+
+# word.count.region %>% 
+#   mutate(word = reorder(word, n)) %>%
+#   ggplot(aes(n, word)) +
+#   geom_col() +
+#   labs(y = NULL)
+
+```
 
