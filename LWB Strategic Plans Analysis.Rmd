@@ -106,7 +106,7 @@ The TidyText R package is being utilized for this analysis: https://www.tidytext
 
 After importing all the PDFs' text into R, I did a simple count of common phrases by Region.
 
-```{r}
+```{r Phrase Counts}
 
 # pdf.text does not have stop words removed 
 
@@ -114,28 +114,63 @@ After importing all the PDFs' text into R, I did a simple count of common phrase
 phrases <- pdf.text %>% 
   mutate(OY = str_count(pdf.text$Text, "opportunity youth"),
          DY = str_count(pdf.text$Text, "disconnected youth"),
-         Foster = str_count(pdf.text$Text, "foster"),
-         HY = str_count(pdf.text$Text, "homeless youth") 
-              + str_count(pdf.text$Text, "unhoused youth"),
-         OSY = str_count(pdf.text$Text, "out of school")) %>% 
+         OSY = str_count(pdf.text$Text, "out of school youth")) %>% 
   group_by(Region) %>% 
   summarize(OY = sum(OY),
             DY = sum(DY),
-            Foster = sum(Foster),
-            Homeless = sum(HY),
             OSY = sum(OSY)) %>% 
-  mutate("Total Mentions" = OY + DY)
+  mutate("Total Mentions" = OY + DY + OSY) %>% 
+  arrange(desc(`Total Mentions`))
+
+kable(phrases %>% filter(phrases$`Total Mentions` > 0),
+  caption = "Any Related Opportunity Youth Mentions")
+
+```
+
+"Unhoused" is not used at all in any text.
+
+Alamo mentions homeless youth but it's not being captured by the code. It has been imported as "homeless                           youth"
+
+```{r Risk Factors}
+
+Homeless <- pdf.text %>% 
+  mutate(Homeless = str_count(pdf.text$Text, "homeless"),
+         HY = str_count(pdf.text$Text, "homeless youth"),
+         Unhoused = str_count(pdf.text$Text, "unhoused")) %>% 
+  group_by(Region) %>% 
+  summarize(Homeless = sum(Homeless),
+            HY = sum(HY),
+            Unhoused = sum(Unhoused)) %>% 
+  mutate("Homeless Mentions" = Homeless + HY + Unhoused) %>% 
+  arrange(desc(`Homeless Mentions`))
+
+kable(Homeless %>% filter(`Homeless Mentions` > 0),
+  caption = "Homeless Mentions")
 
 
+# homeless.text <- pdf.text %>% 
+#   mutate(Homeless = str_detect(pdf.text$Text, "homeless"))
+# 
+# kable(homeless.text %>% filter(Homeless == TRUE) %>% select(Region, Text),
+#   caption = "Text") 
+
+
+# Table for OY synonyms: OY, DY, OSY
+# Tables for related risk factors: foster, homeless, at-risk, youth offenders, juvenile justice
+# Table for mentioned age ranges
+
+```
+
+
+
+
+```{r}
 
 kable(phrases %>% filter(OY >0) %>% select(Region, OY),
   caption = "Opportunity Youth Mentions")
 
 kable(phrases %>% filter(DY >0) %>% select(Region, DY),
   caption = "Disconnected Youth Mentions")
-
-kable(phrases %>% filter(phrases$`Total Mentions`> 0),
-  caption = "Any Related Opportunity Youth Mentions")
 
 ```
 Four regions used the phrase "opportunity youth" and five regions used the phrase "disconnected youth". Greater Dallas stood out as the region that used these phrases most often.
@@ -166,15 +201,15 @@ I then performed a word count.
 
 ```{r}
 
-word.count <- words %>% 
-  count(word, sort = TRUE)
+word.count.total <- words %>% 
+  count(word, sort = TRUE) %>% 
+  mutate(rank = row_number())
 
-kable(word.count %>% head(., 25),
+kable(word.count.total %>% head(., 25),
   caption = "25 Most Frequently Used Words")
 
-# UPDATE: add in rank #s?
 
-word.count %>% 
+word.count.total %>% 
   head(., 25) %>% 
   mutate(word = reorder(word, n)) %>%
   ggplot(aes(n, word)) +
@@ -194,7 +229,7 @@ word.count.region <- words %>%
   group_by(Region) %>% 
   count(word, sort = TRUE) %>% 
   pivot_wider(names_from = Region, values_from = n) %>% 
-  full_join(., word.count) %>% 
+  full_join(., word.count.total) %>% 
   arrange(-n)
 
 word.count.region.25 <- word.count.region %>%  
@@ -323,6 +358,50 @@ ggplot(sentiment.region, aes(index, sentiment, fill = Region)) +
   facet_wrap(~Region, ncol = 4, scales = "free_x") +
   labs(title = "Sentiment of Strategic Plans by Region",
        subtitle = "by every 5 pages of narrative")
+
+```
+
+# Term Frequency - Inverse Document Frequency (tf-idf)
+
+"The idea of tf-idf is to find the important words for the content of each document by decreasing the weight for commonly used words and increasing the weight for words that are not used very much in a collection or corpus of documents."
+
+None of these words occur in all of the texts. They are important, characteristic words for each region.
+
+```{r}
+
+word.count <- words %>% 
+  mutate(word = gsub(x = word, pattern = "[0-9]", replacement = "")) %>% 
+  count(Region, word, sort = TRUE)
+
+# I want to remove numbers
+
+#mutate(mydata, text = gsub(x = text, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = "")) 
+
+#gsub(x = mydata$text, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = "")
+
+
+# total.words <- word.count %>% 
+#   group_by(Region) %>% 
+#   summarize(total = sum(n))  
+# 
+# word.count <- left_join(word.count, total.words)
+
+word.tf_idf <- word.count %>% 
+  bind_tf_idf(word, Region, n) %>%
+  arrange(desc(tf_idf))
+
+```
+
+```{r fig.height=24, fig.width=12}
+
+word.tf_idf %>%
+  group_by(Region) %>%
+  slice_max(tf_idf, n = 15) %>%
+  ungroup() %>%
+  ggplot(aes(tf_idf, fct_reorder(word, tf_idf), fill = Region)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~Region, ncol = 4, scales = "free") +
+  labs(x = "tf-idf", y = NULL)
 
 ```
 
