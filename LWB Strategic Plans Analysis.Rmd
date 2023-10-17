@@ -112,9 +112,12 @@ After importing all the PDFs' text into R, I did a simple count of common phrase
 
 # Counts how many times this phrase was used by the text
 phrases <- pdf.text %>% 
-  mutate(OY = str_count(pdf.text$Text, "opportunity youth"),
-         DY = str_count(pdf.text$Text, "disconnected youth"),
-         OSY = str_count(pdf.text$Text, "out of school youth")) %>% 
+  mutate(OY = str_count(pdf.text$Text, "opportunity youth") +
+           str_count(pdf.text$Text, "OY"),
+         DY = str_count(pdf.text$Text, "disconnected youth") +
+           str_count(pdf.text$Text, "DY"),
+         OSY = str_count(pdf.text$Text, "out of school youth") +
+           str_count(pdf.text$Text, "OSY")) %>% 
   group_by(Region) %>% 
   summarize(OY = sum(OY),
             DY = sum(DY),
@@ -187,9 +190,11 @@ Stop words (common words such as "it", "the", "to", etc.) were removed.
 data(stop_words) 
 
 # But I don't want to remove young or work (lexicon = onix)
-# Should I keep SMART, snowball, or both?
+# And I need to keep in Out and In, for in school and out of school youth
 stop_words <- stop_words %>% 
-  filter(lexicon == "SMART")
+  filter(lexicon == "SMART",
+         word != "out",
+         word != "in")
 
 words <- tidy.text %>%
   anti_join(stop_words)
@@ -336,15 +341,22 @@ sentiment.count <- words %>%
   group_by(sentiment) %>% 
   count(word, sort = TRUE) 
 
-sentiment.count.25 <- sentiment.count %>% 
-  head(., 25)
 
-kable(sentiment.count %>% head(., 25),
-  caption = "25 Most Frequently Used Sentiment Words"
+kable(sentiment.count %>% head(., 10),
+  caption = "10 Most Frequently Used Sentiment Words"
 )
+```
 
+Because "work" is seen as positive in this sentiment dataset, I removed it. In these texts I think it's mostly a neutral term.
+
+```{r}
+
+# Remove work
+sentiment.bing <- get_sentiments("bing") %>% 
+  filter(word != "work")
+  
 sentiment.region <- words %>%
-  inner_join(get_sentiments("bing")) %>%
+  inner_join(sentiment.bing) %>%
   count(Region, index = page %/% 5, sentiment) %>%
   pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
   mutate(sentiment = positive - negative)
@@ -370,21 +382,15 @@ None of these words occur in all of the texts. They are important, characteristi
 ```{r}
 
 word.count <- words %>% 
-  mutate(word = gsub(x = word, pattern = "[0-9]", replacement = "")) %>% 
+  # Remove numbers and unwanted punctuation
+  mutate(word = gsub(x = word, pattern = "[0-9]", replacement = "")) %>%
+  mutate(word = gsub(x = word, pattern = ",,", replacement = "")) %>%
   count(Region, word, sort = TRUE)
 
-# I want to remove numbers
+# This removes all punctuation:
+# mutate(mydata, text = gsub(x = text, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = "")) 
 
-#mutate(mydata, text = gsub(x = text, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = "")) 
-
-#gsub(x = mydata$text, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = "")
-
-
-# total.words <- word.count %>% 
-#   group_by(Region) %>% 
-#   summarize(total = sum(n))  
-# 
-# word.count <- left_join(word.count, total.words)
+# gsub(x = mydata$text, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = "")
 
 word.tf_idf <- word.count %>% 
   bind_tf_idf(word, Region, n) %>%
@@ -398,10 +404,169 @@ word.tf_idf %>%
   group_by(Region) %>%
   slice_max(tf_idf, n = 15) %>%
   ungroup() %>%
+  arrange(desc(tf_idf)) %>% 
   ggplot(aes(tf_idf, fct_reorder(word, tf_idf), fill = Region)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~Region, ncol = 4, scales = "free") +
+  labs(x = "tf-idf", y = NULL)
+
+# UPDATE: Why are they not in order by value?
+
+```
+
+In Heart of Texas and Golden Crescent, CIS is Communities in Schools.
+
+# N-Grams
+
+Examining pairs of two consecutive words, often called “bigrams”
+
+```{r}
+
+# Bigrams
+
+bigrams <- pdf.text %>%
+  unnest_tokens(bigram, Text, token = "ngrams", n = 2) %>%
+  filter(!is.na(bigram)) 
+
+bigrams_separated <- bigrams %>%
+  separate(bigram, c("word1", "word2"), sep = " ")
+
+bigrams_filtered <- bigrams_separated %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word) %>%
+  mutate(word1 = gsub(x = word1, pattern = "[0-9],,", replacement = ""),
+         word2 = gsub(x = word2, pattern = "[0-9]", replacement = ""))
+
+
+# UPDATE: still need to remove unwanted punctuation
+ # mutate(word = gsub(x = word, pattern = ",,", replacement = ""))
+  
+bigram_counts <- bigrams_filtered %>% 
+  count(word1, word2, sort = TRUE)
+
+bigrams_united <- bigrams_filtered %>%
+  unite(bigram, word1, word2, sep = " ")
+
+
+# bigrams.youth <- bigrams_filtered %>%
+#   filter(word2 == "youth") %>%
+#   count(Region, word1, sort = TRUE)
+
+bigrams.youth.all <- bigrams_filtered %>%
+  filter(word2 == "youth") %>%
+  count(word1, sort = TRUE)
+
+kable(bigrams.youth.all %>% head(., 10),
+  caption = "10 most common words preceding youth for all LWBs")
+
+bigrams.youth <- bigrams_filtered %>%
+  group_by(Region) %>% 
+  filter(word2 == "youth") %>%
+  count(word1, sort = TRUE)
+
+# foster, opportunity, disconnected, homeless, disabled
+# How do we capture out of school youth?
+
+```
+
+I think "school youth" comes from the phrases: "in school youth" and "out of school youth".
+
+
+TF-IDF for Bigrams
+
+```{r}
+
+bigram_tf_idf <- bigrams_united %>%
+  count(Region, bigram) %>%
+  bind_tf_idf(bigram, Region, n) %>%
+  arrange(desc(tf_idf))
+
+
+```
+
+
+```{r fig.height=24, fig.width=12}
+
+bigram_tf_idf %>%
+  group_by(Region) %>%
+  slice_max(tf_idf, n = 15) %>%
+  ungroup() %>%
+  ggplot(aes(tf_idf, fct_reorder(bigram, tf_idf), fill = Region)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~Region, ncol = 4, scales = "free") +
   labs(x = "tf-idf", y = NULL)
 
 ```
 
+Opportunity Youth made Capital Area's top 15.
+East Texas evangelical language is interesting.
+West Central Texas mentions youth success.
+
+
+I looked at trigrams as well but didn't see anything worth mentioning.
+
+```{r Trigrams, eval=FALSE, include=FALSE}
+
+# Optional: Trigrams
+# This looks at groups of three words instead of pairs
+trigrams <- pdf.text %>%
+  unnest_tokens(trigram, Text, token = "ngrams", n = 3) %>%
+  filter(!is.na(trigram)) %>%
+  separate(trigram, c("word1", "word2", "word3"), sep = " ") %>%
+  filter(!word1 %in% stop_words$word,
+         !word2 %in% stop_words$word,
+         !word3 %in% stop_words$word) %>%
+#  count(word1, word2, word3, sort = TRUE) %>%
+  unite(trigram, word1, word2, word3, sep = " ")
+
+trigram_tf_idf <- trigrams %>%
+  count(Region, trigram) %>%
+  bind_tf_idf(trigram, Region, n) %>%
+  arrange(desc(tf_idf))
+
+```
+
+```{r Trigrams Image, eval=FALSE, fig.height=24, fig.width=12, include=FALSE}
+
+trigram_tf_idf %>%
+  group_by(Region) %>%
+  slice_max(tf_idf, n = 10) %>%
+  ungroup() %>%
+  ggplot(aes(tf_idf, fct_reorder(trigram, tf_idf), fill = Region)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~Region, ncol = 4, scales = "free") +
+  labs(x = "tf-idf", y = NULL)
+
+```
+
+# Youth Sentiment
+
+Note: "Disconnected" wasn't in the sentiment dataset I used, so I manually added it.
+
+```{r}
+	
+
+# add disconnected
+sentiment.afinn <- get_sentiments("afinn") %>% 
+  rbind(., c("disconnected", -2)) %>% 
+  mutate(value = as.numeric(value))
+
+youth_words <- bigrams_separated %>%
+  filter(word2 == "youth") %>%
+  inner_join(sentiment.afinn, by = c(word1 = "word")) %>%
+  count(word1, value, sort = TRUE) %>%
+  mutate(contribution = n * value) 
+
+youth_words %>%
+  #arrange(desc(abs(contribution))) %>%
+  filter(contribution > 10 | contribution < 0) %>% 
+  #head(30) %>%
+  mutate(word1 = reorder(word1, contribution)) %>%
+  ggplot(aes(n * value, word1, fill = n * value > 0)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = "Contribution (Sentiment value * number of occurrences)",
+       y = "Words preceding \"youth\"",
+       title = "Contribution value of words preceding \"youth\"",
+       subtitle = "for all Texas LWBs combined")
+
+```
