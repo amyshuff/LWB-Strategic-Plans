@@ -3,14 +3,16 @@ title: "LWB Strategic Plans"
 author: "Amy Shuff"
 date: "`r Sys.Date()`"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
-
-``` {r, results='hide'}
+```{r, results='hide'}
 
 # Only do this once:
 # install.packages(c('knitr', 'usethis', 'tidyverse', 'janitor', 'reshape2', 'stringr', 'here', 'readxl', 'pdftools', 'tidytext'))
@@ -32,13 +34,15 @@ library(textdata)
 
 # Methodology
 
-Each one of the 28 Texas Local Workforce Boards' (LWBs) Strategic Plans were downloaded.
+Each one of the 28 Texas Local Workforce Boards' (LWBs) Strategic Plans
+were downloaded.
 
-https://www.twc.texas.gov/agency/workforce-development-boards
+<https://www.twc.texas.gov/agency/workforce-development-boards>
 
-Questions I have: 
+Questions I have:
 
-- Should it be called a Workforce Innovation & Opportunity Act (WIOA) plan instead?
+-   Should it be called a Workforce Innovation & Opportunity Act (WIOA)
+    plan instead?
 
 ```{r PDF Import, include=FALSE}
 
@@ -66,8 +70,10 @@ pdf.names <- pdf.names %>%
 
 ```
 
-- Currently, I need to verify that I have the 2-year modification plans for East Texas, Southeast Texas, South Texas, and Texoma. From looking at their files, I could not see that what I have is updated and not the 2021 version.
-
+-   Currently, I need to verify that I have the 2-year modification
+    plans for East Texas, Southeast Texas, South Texas, and Texoma. From
+    looking at their files, I could not see that what I have is updated
+    and not the 2021 version.
 
 ```{r Unnest words tidytext, include=FALSE}
 
@@ -96,15 +102,13 @@ tidy.text <- pdf.text %>%
 
 ```
 
-
-The TidyText R package is being utilized for this analysis: https://www.tidytextmining.com/tidytext
-
-
-
+The TidyText R package is being utilized for this analysis:
+<https://www.tidytextmining.com/tidytext>
 
 # Phrase Counts
 
-After importing all the PDFs' text into R, I did a simple count of common phrases by Region.
+After importing all the PDFs' text into R, I did a simple count of
+common phrases by Region.
 
 ```{r Phrase Counts}
 
@@ -117,7 +121,13 @@ phrases <- pdf.text %>%
          DY = str_count(pdf.text$Text, "disconnected youth") +
            str_count(pdf.text$Text, "DY"),
          OSY = str_count(pdf.text$Text, "out of school youth") +
-           str_count(pdf.text$Text, "OSY")) %>% 
+           #(?i) makes it case insensitive. Using tidy text would be better instead.
+           str_count(pdf.text$Text, "(?i)out-of-school") +
+           str_count(pdf.text$Text, "OSY") +
+           str_count(pdf.text$Text, "dropout") +
+           str_count(pdf.text$Text, "drop out") +
+           # I'm not sure about including OS. I think Northeast Texas is the only region that used that abbreviation.
+           str_count(pdf.text$Text, "OS") ) %>% 
   group_by(Region) %>% 
   summarize(OY = sum(OY),
             DY = sum(DY),
@@ -132,7 +142,8 @@ kable(phrases %>% filter(phrases$`Total Mentions` > 0),
 
 "Unhoused" is not used at all in any text.
 
-Alamo mentions homeless youth but it's not being captured by the code. It has been imported as "homeless                           youth"
+Alamo mentions homeless youth but it's not being captured by the code.
+It has been imported as "homeless youth"
 
 ```{r Risk Factors}
 
@@ -151,6 +162,14 @@ kable(Homeless %>% filter(`Homeless Mentions` > 0),
   caption = "Homeless Mentions")
 
 
+
+# osy.text <- pdf.text %>%
+#   mutate(OSY = str_detect(pdf.text$Text, "os"))
+# 
+# kable(osy.text %>% filter(OSY == TRUE) %>% select(Region, Text),
+#   caption = "Text")
+
+
 # homeless.text <- pdf.text %>% 
 #   mutate(Homeless = str_detect(pdf.text$Text, "homeless"))
 # 
@@ -164,9 +183,6 @@ kable(Homeless %>% filter(`Homeless Mentions` > 0),
 
 ```
 
-
-
-
 ```{r}
 
 kable(phrases %>% filter(OY >0) %>% select(Region, OY),
@@ -176,13 +192,14 @@ kable(phrases %>% filter(DY >0) %>% select(Region, DY),
   caption = "Disconnected Youth Mentions")
 
 ```
-Four regions used the phrase "opportunity youth" and five regions used the phrase "disconnected youth". Greater Dallas stood out as the region that used these phrases most often.
+
+Four regions used the phrase "opportunity youth" and five regions used
+the phrase "disconnected youth". Greater Dallas stood out as the region
+that used these phrases most often. This analysis needs to be redone with tidytext.
 
 # Word Count
 
-Stop words (common words such as "it", "the", "to", etc.) were removed. 
-
-- I'm wondering if I should also remove numbers? 0 is one of the most frequently used words.
+Stop words (common words such as "it", "the", "to", etc.) were removed. Numbers and punctuation were taken out as well.
 
 ```{r, Stop Words, include=FALSE}
 
@@ -190,17 +207,19 @@ Stop words (common words such as "it", "the", "to", etc.) were removed.
 data(stop_words) 
 
 # But I don't want to remove young or work (lexicon = onix)
-# And I need to keep in Out and In, for in school and out of school youth
 stop_words <- stop_words %>% 
-  filter(lexicon == "SMART",
-         word != "out",
-         word != "in")
+  filter(lexicon == "SMART")
 
 words <- tidy.text %>%
+  mutate(word = gsub(x = word, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""))
+
+words <- words %>% 
+  mutate(word = na_if(words$word, "")) %>% 
+  na.omit %>% 
   anti_join(stop_words)
 
-```
 
+```
 
 I then performed a word count.
 
@@ -226,7 +245,8 @@ word.count.total %>%
 
 ```
 
-Youth is the 22nd most used word overall. Fun fact: "Youngsters" was used twice by North Texas.
+Youth is the 22nd most used word overall. Fun fact: "Youngsters" was
+used twice by North Texas.
 
 ```{r}
 
@@ -255,8 +275,6 @@ word.count.region.25.long %>%
 
 ```
 
-
-
 ```{r frequency}
 
 frequency <- words %>% 
@@ -282,31 +300,26 @@ frequency %>%
 
 ```
 
-
 # Sentiment Analysis
 
- Name: AFINN-111 
- URL: http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=6010 
- License: Open Database License (ODbL) v1.0
- 
+Name: AFINN-111 URL:
+<http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=6010>
+License: Open Database License (ODbL) v1.0
 
- Citation info:
+Citation info:
 
-This dataset was published in Saif M. Mohammad and Peter Turney. (2013), ``Crowdsourcing a Word-Emotion Association Lexicon.'' Computational Intelligence, 29(3): 436-465.
+This dataset was published in Saif M. Mohammad and Peter Turney. (2013),
+\`\`Crowdsourcing a Word-Emotion Association Lexicon.'' Computational
+Intelligence, 29(3): 436-465.
 
-article{mohammad13,
-author = {Mohammad, Saif M. and Turney, Peter D.},
-title = {Crowdsourcing a Word-Emotion Association Lexicon},
-journal = {Computational Intelligence},
-volume = {29},
-number = {3},
-pages = {436-465},
-doi = {10.1111/j.1467-8640.2012.00460.x},
-url = {https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-8640.2012.00460.x},
-eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1467-8640.2012.00460.x},
-year = {2013}
-}
-If you use this lexicon, then please cite it. 
+article{mohammad13, author = {Mohammad, Saif M. and Turney, Peter D.},
+title = {Crowdsourcing a Word-Emotion Association Lexicon}, journal =
+{Computational Intelligence}, volume = {29}, number = {3}, pages =
+{436-465}, doi = {10.1111/j.1467-8640.2012.00460.x}, url =
+{<https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-8640.2012.00460.x>},
+eprint =
+{<https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1467-8640.2012.00460.x>},
+year = {2013} } If you use this lexicon, then please cite it.
 
 ```{r}
 
@@ -347,7 +360,8 @@ kable(sentiment.count %>% head(., 10),
 )
 ```
 
-Because "work" is seen as positive in this sentiment dataset, I removed it. In these texts I think it's mostly a neutral term.
+Because "work" is seen as positive in this sentiment dataset, I removed
+it. In these texts I think it's mostly a neutral term.
 
 ```{r}
 
@@ -375,9 +389,13 @@ ggplot(sentiment.region, aes(index, sentiment, fill = Region)) +
 
 # Term Frequency - Inverse Document Frequency (tf-idf)
 
-"The idea of tf-idf is to find the important words for the content of each document by decreasing the weight for commonly used words and increasing the weight for words that are not used very much in a collection or corpus of documents."
+"The idea of tf-idf is to find the important words for the content of
+each document by decreasing the weight for commonly used words and
+increasing the weight for words that are not used very much in a
+collection or corpus of documents."
 
-None of these words occur in all of the texts. They are important, characteristic words for each region.
+None of these words occur in all of the texts. They are important,
+characteristic words for each region.
 
 ```{r}
 
@@ -418,7 +436,9 @@ In Heart of Texas and Golden Crescent, CIS is Communities in Schools.
 
 # N-Grams
 
-Examining pairs of two consecutive words, often called “bigrams”
+## Bigrams
+
+Examining pairs of two consecutive words, often called "bigrams"
 
 ```{r}
 
@@ -434,12 +454,14 @@ bigrams_separated <- bigrams %>%
 bigrams_filtered <- bigrams_separated %>%
   filter(!word1 %in% stop_words$word) %>%
   filter(!word2 %in% stop_words$word) %>%
-  mutate(word1 = gsub(x = word1, pattern = "[0-9],,", replacement = ""),
-         word2 = gsub(x = word2, pattern = "[0-9]", replacement = ""))
+  mutate(word1 = gsub(x = word1, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""),
+         word2 = gsub(x = word2, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""))
 
-
-# UPDATE: still need to remove unwanted punctuation
- # mutate(word = gsub(x = word, pattern = ",,", replacement = ""))
+bigrams_filtered <- bigrams_filtered %>%
+  mutate(word1 = na_if(bigrams_filtered$word1, ""),
+         word2 = na_if(bigrams_filtered$word2, "")) %>% 
+  na.omit 
+  
   
 bigram_counts <- bigrams_filtered %>% 
   count(word1, word2, sort = TRUE)
@@ -469,8 +491,8 @@ bigrams.youth <- bigrams_filtered %>%
 
 ```
 
-I think "school youth" comes from the phrases: "in school youth" and "out of school youth".
-
+I think "school youth" comes from the phrases: "in school youth" and
+"out of school youth".
 
 TF-IDF for Bigrams
 
@@ -483,7 +505,6 @@ bigram_tf_idf <- bigrams_united %>%
 
 
 ```
-
 
 ```{r fig.height=24, fig.width=12}
 
@@ -498,28 +519,38 @@ bigram_tf_idf %>%
 
 ```
 
-Opportunity Youth made Capital Area's top 15.
-East Texas evangelical language is interesting.
-West Central Texas mentions youth success.
+Opportunity Youth made Capital Area's top 15. East Texas evangelical
+language is interesting. West Central Texas mentions youth success.
 
+## Trigrams
 
-I looked at trigrams as well but didn't see anything worth mentioning.
+This looks at groups of three words instead of pairs. I'm specifically interested in "out of school."
 
-```{r Trigrams, eval=FALSE, include=FALSE}
+```{r Trigrams, include=FALSE}
 
-# Optional: Trigrams
 # This looks at groups of three words instead of pairs
-trigrams <- pdf.text %>%
+trigrams.stop <- pdf.text %>%
   unnest_tokens(trigram, Text, token = "ngrams", n = 3) %>%
   filter(!is.na(trigram)) %>%
   separate(trigram, c("word1", "word2", "word3"), sep = " ") %>%
   filter(!word1 %in% stop_words$word,
          !word2 %in% stop_words$word,
          !word3 %in% stop_words$word) %>%
-#  count(word1, word2, word3, sort = TRUE) %>%
+  mutate(word1 = gsub(x = word1, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""),
+         word2 = gsub(x = word2, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""),
+         word3 = gsub(x = word3, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""))  
+#  count(word1, word2, word3, sort = TRUE)
+
+trigrams_filtered <- trigrams.stop %>%
+  mutate(word1 = na_if(trigrams.stop$word1, ""),
+         word2 = na_if(trigrams.stop$word2, ""),
+         word3 = na_if(trigrams.stop$word3, "")) %>% 
+  na.omit
+
+trigrams_united <- trigrams_filtered %>% 
   unite(trigram, word1, word2, word3, sep = " ")
 
-trigram_tf_idf <- trigrams %>%
+trigram_tf_idf <- trigrams_united %>%
   count(Region, trigram) %>%
   bind_tf_idf(trigram, Region, n) %>%
   arrange(desc(tf_idf))
@@ -539,9 +570,74 @@ trigram_tf_idf %>%
 
 ```
 
+```{r eval=FALSE, include=FALSE}
+
+trigram_count <- trigrams_filtered %>% 
+  unite(trigram, word1, word2, word3, sep = " ") %>% 
+  count(trigram, sort = TRUE) %>% 
+  mutate(rank = row_number())
+
+trigram.youth <- trigrams_filtered %>% 
+    filter(word3 == "youth") %>% 
+    unite(trigram, word1, word2, word3, sep = " ") %>% 
+    count(trigram, sort = TRUE) 
+
+trigram.youth <- trigrams_filtered %>% 
+    filter(word3 == "youth") %>% 
+    unite(trigram, word1, word2, word3, sep = " ") %>% 
+    count(trigram, Region, sort = TRUE)
+  
+  
+#   mutate(OY = str_count(pdf.text$Text, "opportunity youth") +
+#            str_count(pdf.text$Text, "OY"),
+#          DY = str_count(pdf.text$Text, "disconnected youth") +
+#            str_count(pdf.text$Text, "DY"),
+#          OSY = str_count(pdf.text$Text, "out of school youth") +
+#            str_count(pdf.text$Text, "OSY")) %>% 
+#   group_by(Region) %>% 
+#   summarize(OY = sum(OY),
+#             DY = sum(DY),
+#             OSY = sum(OSY)) %>% 
+#   mutate("Total Mentions" = OY + DY + OSY) %>% 
+#   arrange(desc(`Total Mentions`))
+# 
+# kable(phrases %>% filter(phrases$`Total Mentions` > 0),
+#   caption = "Any Related Opportunity Youth Mentions")
+
+
+```
+I'm going to try it with stop words included because "out of school" is tricky otherwise (both "out" and "of" are stop words.)
+
+```{r Trigrams with stopwords, echo=FALSE}
+
+# This looks at groups of three words instead of pairs
+trigrams <- pdf.text %>%
+  unnest_tokens(trigram, Text, token = "ngrams", n = 3) %>%
+  filter(!is.na(trigram)) %>%
+  count(trigram, sort = TRUE)
+
+trigrams.region <- pdf.text %>%
+  unnest_tokens(trigram, Text, token = "ngrams", n = 3) %>%
+  filter(!is.na(trigram)) %>%
+  count(trigram, Region, sort = TRUE)
+
+
+kable(trigrams.region %>% filter(trigrams.region$trigram == "out of school"),
+   caption = "Out of School Mentions")
+```
+Every region mentioned "out of school" at least once.
+
+```{r}
+kable(trigrams %>% filter(str_detect(trigrams$trigram, 'youth')) %>% head(., 15),
+   caption = "Youth Mentions")
+
+```
+I think "post exit youth" and also "former foster youth" are interesting. Is disability a risk factor for OY?
+
 # Youth Sentiment
 
-Note: "Disconnected" wasn't in the sentiment dataset I used, so I manually added it.
+Note: "Disconnected" wasn't in the sentiment dataset I used, so I
+manually added it.
 
 ```{r}
 	
