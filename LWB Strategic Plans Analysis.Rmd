@@ -688,4 +688,124 @@ youth_words %>%
 
 ```
 
+# Rural Correlations
+
+```{r document-term matrix}
+
+#Split a string into columns
+#separate_wider_delim() 
+
+
+# IDEA: Rural mentions on x axis, youth mentions on y (frequency instead of counts?)
+# 
+# year_term_counts %>%
+#   filter(term %in% c("god", "america", "foreign", "union", "constitution", "freedom")) %>%
+#   ggplot(aes(year, count / year_total)) +
+#   geom_point() +
+#   geom_smooth() +
+#   facet_wrap(~ term, scales = "free_y") +
+#   scale_y_continuous(labels = scales::percent_format()) +
+#   labs(y = "% frequency of word in inaugural address")
+
+```
+
+# Web Mining
+
+```{r Web Mining, eval=FALSE, include=FALSE}
+
+# The web mining from the book I was using is now outdated. It would be interesting to look up the most recent news articles relating to opportunity youth and analyze them
+
+# tm.plugin.webmining connects to online feeds to retrieve news articles based on a keyword
+# 
+# install.packages('tm.plugin.webmining')
+# library(tm.plugin.webmining)
+# library(purrr)
+
+# allows us to retrieve the 20 most recent articles related to the Microsoft (MSFT) stock
+
+# WebCorpus(GoogleFinanceSource("NASDAQ:MSFT"))
+```
+
+# Word Associations
+
+This section follows this tutorial : https://www.red-gate.com/simple-talk/databases/sql-server/bi-sql-server/text-mining-and-sentiment-analysis-with-r/
+
+```{r}
+
+#install.packages('tm')
+library(tm)
+
+#install.packages('tidyr')
+#library(tidyr)
+
+#First change tidy word count into Document Term Matrix
+dtm <- word.count %>% 
+  cast_dtm(Region, word, n)
+
+assocs.list <- findAssocs(dtm, terms = c("youth", "young"), corlimit = 0.65)
+
+assocs.youth <- bind_rows(list(assocs.list[["youth"]])) %>% 
+  pivot_longer(cols = everything(),
+               cols_vary = "slowest", 
+               names_to = "youth", 
+               values_to = "correlation")
+
+assocs.young <- bind_rows(list(assocs.list[["young"]])) %>% 
+  pivot_longer(cols = everything(),
+               cols_vary = "slowest", 
+               names_to = "young", 
+               values_to = "correlation")
+
+kable(assocs.youth %>% head(., 25), caption = "Top 25 Words Associcated with Youth")
+
+kable(assocs.young %>% head(., 25), caption = "Top 25 Words Associcated with Young")
+
+```
+
+91% of the time the word reskill is mentioned, it's with the word young.
+
+# Topic Modeling
+
+"Latent Dirichlet allocation (LDA) is a particularly popular method for fitting a topic model. It treats each document as a mixture of topics, and each topic as a mixture of words."
+
+```{r}
+
+#install.packages('topicmodels')
+library(topicmodels)
+
+lda <- LDA(dtm, k = 2, control = list(seed = 1234))
+
+# The tidytext package provides this method for extracting the per-topic-per-word probabilities, called β (“beta”), from the model.
+topics <- tidy(lda, matrix = "beta")
+
+top_terms <- topics %>% 
+    group_by(topic) %>%
+  slice_max(beta, n = 10) %>% 
+  ungroup() %>%
+  arrange(topic, -beta)
+
+top_terms %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered()
+
+beta_wide <- topics %>%
+  mutate(topic = paste0("topic", topic)) %>%
+  pivot_wider(names_from = topic, values_from = beta) %>% 
+  filter(topic1 > .005 | topic2 > .005) %>%
+  mutate(log_ratio = log2(topic2 / topic1)) 
+
+beta_wide %>%
+  mutate(term = reorder(term, log_ratio)) %>% 
+  ggplot(aes(log_ratio, term)) +
+  geom_col() +
+  scale_y_reordered() +
+  labs(x = "Log2 ratio of beta in topic 2 / topic 1",
+       title = "Words with the greatest difference in β between topic 2 and topic 1",
+       subtitle = "for all Texas LWBs combined")
+ 
+
+```
 
