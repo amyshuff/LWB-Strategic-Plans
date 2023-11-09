@@ -1,5 +1,5 @@
 ---
-title: "LWB Strategic Plans"
+title: "LWB WIOA Strategic Plans"
 author: "Amy Shuff"
 date: "`r Sys.Date()`"
 output: html_document
@@ -60,7 +60,7 @@ pdf.names <- data.frame(pdf.file.list) %>%
   mutate(Board = row_number())
   
 pdf.names <- pdf.names %>% 
-  cbind(., Region = c("Panhandle", "South Plains", "North Texas", "North Central Texas", "Tarrant County", "Greater Dallas", "Northeast Texas", "East Texas", "West Central Texas", "Borderplex", "Permian-Basin", "Concho Valley", "Heart of Texas", "Capital Area", "Rural Capital Area", "Brazos Valley", "Deep East Texas", "Southeast Texas", "Golden Crescent", "Alamo", "South Texas", "Coastal Bend", "Lower Rio Grande Valley", "Cameron", "Texoma", "Central Texas", "Middle Rio Grande", "Gulf Coast")) 
+  cbind(., Region = c("Panhandle", "South Plains", "North Texas", "North Central Texas", "Tarrant County", "Greater Dallas", "Northeast Texas", "East Texas", "West Central Texas", "Borderplex", "Permian-Basin", "Concho Valley", "Heart of Texas", "Capital Area", "Rural Capital Area", "Brazos Valley", "Deep East Texas", "Southeast Texas", "Golden Crescent", "Alamo", "South Texas", "Coastal Bend", "Lower Rio Grande Valley", "Cameron", "Texoma", "Central Texas", "Middle Rio Grande", "Gulf Coast", "TWC")) 
 
 pdf.names <- pdf.names %>% 
   mutate (
@@ -649,8 +649,18 @@ kable(trigrams.region %>% filter(trigrams.region$trigram == "out of school"),
 Every region mentioned "out of school" at least once.
 
 ```{r}
+
 kable(trigrams %>% filter(str_detect(trigrams$trigram, 'youth')) %>% head(., 15),
-   caption = "Youth Mentions")
+   caption = "Youth Mentions with Stop Words Included")
+
+
+trigram_count <- trigrams_filtered %>% 
+  unite(trigram, word1, word2, word3, sep = " ") %>% 
+  count(trigram, sort = TRUE) %>% 
+  mutate(rank = row_number())
+
+kable(trigram_count %>% filter(str_detect(trigram_count$trigram, 'youth')) %>% head(., 15),
+   caption = "Youth Mentions without Stop Words")
 
 ```
 I think "post exit youth" and also "former foster youth" are interesting. Is disability a risk factor for OY?
@@ -660,9 +670,8 @@ I think "post exit youth" and also "former foster youth" are interesting. Is dis
 Note: "Disconnected" wasn't in the sentiment dataset I used, so I
 manually added it.
 
-```{r}
+```{r Youth Sentiment}
 	
-
 # add disconnected
 sentiment.afinn <- get_sentiments("afinn") %>% 
   rbind(., c("disconnected", -2)) %>% 
@@ -688,9 +697,8 @@ youth_words %>%
 
 ```
 
-# Rural Correlations
 
-```{r document-term matrix}
+```{r rural correlations, eval=FALSE, include=FALSE}
 
 #Split a string into columns
 #separate_wider_delim() 
@@ -709,7 +717,6 @@ youth_words %>%
 
 ```
 
-# Web Mining
 
 ```{r Web Mining, eval=FALSE, include=FALSE}
 
@@ -808,4 +815,4 @@ beta_wide %>%
  
 
 ```
-
+Idea: View the Board Oversight Capacity score card for your Board. Every year, the Texas Workforce Commission (TWC) assesses how well each Board uses local funds and provides local workforce services. 
