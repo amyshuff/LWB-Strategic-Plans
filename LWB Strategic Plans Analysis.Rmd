@@ -112,7 +112,7 @@ common phrases by Region.
 
 This is not a final table yet. I need to re-do this when I finish cleaning the text.
 
-- OY includes oppotunity youth and OY. 
+- OY includes opportunity youth and OY. 
 
 - DY includes disconnected youth and DY.
 
@@ -151,7 +151,7 @@ kable(phrases %>% filter(phrases$`Total Mentions` > 0),
   caption = "Any Related Opportunity Youth Mentions")
 
 ```
-Next I weanted to create a table for mentions of risk factors, like homelessness.
+Next I wanted to create a table for mentions of risk factors, like homelessness.
 
 This table is also not final. Need to re-do with cleaned text. Alamo mentions homeless youth but it's not being captured.
 
@@ -241,7 +241,21 @@ words <- words %>%
 
 ```
 
-I then performed a word count.
+I then performed a word count. Here we can see the number of words used in each strategic plan. The statewide TWC has the most and Brazos Valley has less than all other regions.
+
+
+```{r}
+
+word.total.region <- words %>% 
+  group_by(Region) %>% 
+  count(word, sort = TRUE) %>% 
+  na.omit %>% 
+  summarise('Total Words' = sum(n, na.rm = TRUE)) %>% 
+  arrange(-`Total Words`)
+
+kable(word.total.region, caption = "Total Words in each Region")
+
+```
 
 ```{r}
 
@@ -645,7 +659,9 @@ trigrams.region <- pdf.text %>%
 
 kable(trigrams.region %>% filter(trigrams.region$trigram == "out of school"),
    caption = "Out of School Mentions")
+
 ```
+
 Every region mentioned "out of school" at least once.
 
 ```{r}
@@ -664,6 +680,128 @@ kable(trigram_count %>% filter(str_detect(trigram_count$trigram, 'youth')) %>% h
 
 ```
 I think "post exit youth" and also "former foster youth" are interesting. Is disability a risk factor for OY?
+
+
+# Final Phrase Counts
+
+These phrase counts will be done with clean data and will be more accurate than the initial ones I did.
+- OY includes oppotunity youth and OY. 
+
+- DY includes disconnected youth and DY.
+
+- OSY includes out of school youth, out-of-school, OSY, OS, dropout, and drop out.
+
+
+Next I wanted to create a table for mentions of risk factors, like homelessness.
+
+This table is also not final. Need to re-do with cleaned text. Alamo mentions homeless youth but it's not being captured.
+
+- Homeless includes homeless.
+
+- HY includes homeless youth.
+
+- Unhoused includes unhoused.
+
+"Unhoused" is not used at all in any text.
+
+These homeless counts are for any mention of homeless, not just youth related. Even so, only 16 regions have mentions.
+
+
+Alamo used the phrase "bachelor's degree none" at least 88 times, which may be related to opportunity youth.
+
+
+## AMY START HERE
+
+```{r}
+
+
+# AMY START HERE: use the endsWith function (gives True or False) in combination with ifelse to accurately count these phrases
+
+oy.phrases <- trigrams.region %>% 
+  mutate(OY = str_count(trigram, "opportunity youth") +
+           str_count(trigram, "OY"),
+         DY = str_count(trigram, "disconnected youth") +
+           str_count(trigram, "DY"),
+         OSY = str_count(trigram, "out of school youth") +
+           #(?i) makes it case insensitive. Using tidy text would be better instead.
+           str_count(trigram, "(?i)out-of-school") +
+           str_count(trigram, "OSY") +
+           str_count(trigram, "dropout") +
+           str_count(trigram, "drop out") +
+           # I'm not sure about including OS. I think Northeast Texas is the only region that used that abbreviation.
+           str_count(trigram, "OS") ) %>% 
+  group_by(Region) %>% 
+  summarize(OY = sum(OY),
+            DY = sum(DY),
+            OSY = sum(OSY)) %>% 
+  mutate("Total Mentions" = OY + DY + OSY) %>% 
+  arrange(desc(`Total Mentions`)) %>% 
+  mutate(Rank = row_number())
+
+kable(oy.phrases %>% filter(phrases$`Total Mentions` > 0),
+  caption = "Any Related Opportunity Youth Mentions")
+
+
+
+
+
+kable(trigrams.region %>% filter(trigrams.region$trigram == "out of school"),
+   caption = "Out of School Mentions")
+
+
+
+
+
+
+
+# This looks at groups of three words instead of pairs
+trigrams.stop <- pdf.text %>%
+  unnest_tokens(trigram, Text, token = "ngrams", n = 3) %>%
+  filter(!is.na(trigram)) %>%
+  separate(trigram, c("word1", "word2", "word3"), sep = " ") %>%
+  filter(!word1 %in% stop_words$word,
+         !word2 %in% stop_words$word,
+         !word3 %in% stop_words$word) %>%
+  mutate(word1 = gsub(x = word1, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""),
+         word2 = gsub(x = word2, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""),
+         word3 = gsub(x = word3, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""))  
+#  count(word1, word2, word3, sort = TRUE)
+
+trigrams_filtered <- trigrams.stop %>%
+  mutate(word1 = na_if(trigrams.stop$word1, ""),
+         word2 = na_if(trigrams.stop$word2, ""),
+         word3 = na_if(trigrams.stop$word3, "")) %>% 
+  na.omit
+
+trigrams_united <- trigrams_filtered %>% 
+  unite(trigram, word1, word2, word3, sep = " ")
+
+# complete() includes cases where a word didn't appear in a document
+#   complete(year, term, fill = list(count = 0)) 
+
+# Do this with subject mentions: 
+#   
+# frequency <- words %>% 
+#   count(Region, word) %>% 
+#   group_by(Region) %>% 
+#   mutate(proportion = n/sum(n)) %>% 
+#   select(-n) %>% 
+#   arrange(-proportion) 
+# 
+# 
+# frequency %>% 
+#   filter(word == "youth") %>% 
+#   ungroup() %>% 
+#   mutate(Region = reorder(Region, proportion)) %>%
+#   mutate(rank = row_number()) %>% 
+#   ggplot(aes(x = proportion, y = Region)) +
+#   geom_col() +
+#   labs(title = "Youth Mentions by Region",
+#        subtitle = "as a proportion of all words used")
+
+
+```
+
 
 # Youth Sentiment
 
@@ -815,4 +953,5 @@ beta_wide %>%
  
 
 ```
+
 Idea: View the Board Oversight Capacity score card for your Board. Every year, the Texas Workforce Commission (TWC) assesses how well each Board uses local funds and provides local workforce services. 
