@@ -712,12 +712,26 @@ Alamo used the phrase "bachelor's degree none" at least 88 times, which may be r
 
 ## AMY START HERE
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 
 # AMY START HERE: use the endsWith function (gives True or False) in combination with ifelse to accurately count these phrases
 
+#OSY = filter(trigram == ifelse(endsWith(trigram, "out of school"), trigram, ""))
+
 oy.phrases <- trigrams.region %>% 
+  mutate(OY = ifelse(endsWith(trigram, "opportunity youth"), n, 0),
+         OSY = ifelse(endsWith(trigram, "out of school"), n, 0),
+         DY = ifelse(endsWith(trigram, "disconnected youth"), n, 0)) %>% 
+  group_by(Region) %>% 
+  summarise("Opportunity Youth" = sum(OY), 
+            "Disconnected Youth" = sum(DY),
+            "Out of School" = sum(OSY)
+            )
+# Next divide by number of words/3 (because we're looking at trigrams)
+
+# Can I look at groups of four words to see "out of school youth"?
+  
   mutate(OY = str_count(trigram, "opportunity youth") +
            str_count(trigram, "OY"),
          DY = str_count(trigram, "disconnected youth") +
@@ -743,8 +757,6 @@ kable(oy.phrases %>% filter(phrases$`Total Mentions` > 0),
 
 
 
-
-
 kable(trigrams.region %>% filter(trigrams.region$trigram == "out of school"),
    caption = "Out of School Mentions")
 
@@ -752,30 +764,47 @@ kable(trigrams.region %>% filter(trigrams.region$trigram == "out of school"),
 
 
 
+kable(trigrams.region %>% filter(trigrams.region$trigram == "out of school"),
+   caption = "Out of School Mentions")
+
+```
+
+# Quadgrams
+
+Alamo used the phrase "on the job training" a total of 107 times in their strategic plan.
+
+Northeast Texas uses OS for out of school.
+
+TWC uses the word "youths".
+
+```{r Quadgrams}
+
+# This looks at groups of four words
+quadgrams <- pdf.text %>%
+  unnest_tokens(quadgram, Text, token = "ngrams", n = 4) %>%
+  filter(!is.na(quadgram)) %>% 
+  count(Region, quadgram)
+
+quadgram.oos <- quadgrams %>% 
+  mutate(OOS = ifelse(startsWith(quadgram, "out of school"), n, 0)) %>% 
+  filter(OOS >0) %>% 
+  ungroup() %>% 
+  group_by(quadgram) %>% 
+  summarise(n = sum(n)) %>% 
+  arrange(-n)
+
+kable(quadgram.oos,
+      caption = "Phrases begining with 'out of school'")
+#Northeast Texas uses OS for out of school
+#TWC uses the word "youths"
+
+```         
+         
 
 
-# This looks at groups of three words instead of pairs
-trigrams.stop <- pdf.text %>%
-  unnest_tokens(trigram, Text, token = "ngrams", n = 3) %>%
-  filter(!is.na(trigram)) %>%
-  separate(trigram, c("word1", "word2", "word3"), sep = " ") %>%
-  filter(!word1 %in% stop_words$word,
-         !word2 %in% stop_words$word,
-         !word3 %in% stop_words$word) %>%
-  mutate(word1 = gsub(x = word1, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""),
-         word2 = gsub(x = word2, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""),
-         word3 = gsub(x = word3, pattern = "[0-9]+|[[:punct:]]|\\(.*\\)", replacement = ""))  
-#  count(word1, word2, word3, sort = TRUE)
 
-trigrams_filtered <- trigrams.stop %>%
-  mutate(word1 = na_if(trigrams.stop$word1, ""),
-         word2 = na_if(trigrams.stop$word2, ""),
-         word3 = na_if(trigrams.stop$word3, "")) %>% 
-  na.omit
 
-trigrams_united <- trigrams_filtered %>% 
-  unite(trigram, word1, word2, word3, sep = " ")
-
+```{r}
 # complete() includes cases where a word didn't appear in a document
 #   complete(year, term, fill = list(count = 0)) 
 
