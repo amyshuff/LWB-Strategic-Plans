@@ -11,7 +11,7 @@
 
 <meta name="author" content="Amy Shuff" />
 
-<meta name="date" content="2024-02-09" />
+<meta name="date" content="2024-02-20" />
 
 <title>LWB WIOA Strategic Plans</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">LWB WIOA Strategic Plans</h1>
 <h4 class="author">Amy Shuff</h4>
-<h4 class="date">2024-02-09</h4>
+<h4 class="date">2024-02-20</h4>
 
 </div>
 
@@ -371,433 +371,8 @@ plans for East Texas, Southeast Texas, South Texas, and Texoma. From
 looking at their files, I could not see that what I have is updated and
 not the 2021 version.</p></li>
 </ul>
-<p>The TidyText R package is being utilized for this analysis: <a href="https://www.tidytextmining.com/tidytext" class="uri">https://www.tidytextmining.com/tidytext</a></p>
-</div>
-<div id="phrase-counts" class="section level1">
-<h1>Phrase Counts</h1>
-<p>After importing all the PDFs’ text into R, I did a simple count of
-common phrases by Region.</p>
-<p>This is not a final table yet. I need to re-do this when I finish
-cleaning the text.</p>
-<ul>
-<li><p>OY includes opportunity youth and OY.</p></li>
-<li><p>DY includes disconnected youth and DY.</p></li>
-<li><p>OSY includes out of school youth, out-of-school, OSY, OS,
-dropout, and drop out.</p></li>
-</ul>
-<p>It looks like every region mentions something related to OY at least
-once, but will need to double check those that only have a few
-mentions.</p>
-<table>
-<caption>Any Related Opportunity Youth Mentions</caption>
-<thead>
-<tr class="header">
-<th align="left">Region</th>
-<th align="right">OY</th>
-<th align="right">DY</th>
-<th align="right">OSY</th>
-<th align="right">Total Mentions</th>
-<th align="right">Rank</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">TWC</td>
-<td align="right">76</td>
-<td align="right">0</td>
-<td align="right">102</td>
-<td align="right">178</td>
-<td align="right">1</td>
-</tr>
-<tr class="even">
-<td align="left">Greater Dallas</td>
-<td align="right">26</td>
-<td align="right">2</td>
-<td align="right">15</td>
-<td align="right">43</td>
-<td align="right">2</td>
-</tr>
-<tr class="odd">
-<td align="left">Lower Rio Grande Valley</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">25</td>
-<td align="right">25</td>
-<td align="right">3</td>
-</tr>
-<tr class="even">
-<td align="left">Golden Crescent</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">20</td>
-<td align="right">21</td>
-<td align="right">4</td>
-</tr>
-<tr class="odd">
-<td align="left">Alamo</td>
-<td align="right">0</td>
-<td align="right">2</td>
-<td align="right">16</td>
-<td align="right">18</td>
-<td align="right">5</td>
-</tr>
-<tr class="even">
-<td align="left">Cameron</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">17</td>
-<td align="right">17</td>
-<td align="right">6</td>
-</tr>
-<tr class="odd">
-<td align="left">Borderplex</td>
-<td align="right">2</td>
-<td align="right">2</td>
-<td align="right">12</td>
-<td align="right">16</td>
-<td align="right">7</td>
-</tr>
-<tr class="even">
-<td align="left">Capital Area</td>
-<td align="right">8</td>
-<td align="right">0</td>
-<td align="right">8</td>
-<td align="right">16</td>
-<td align="right">8</td>
-</tr>
-<tr class="odd">
-<td align="left">Panhandle</td>
-<td align="right">1</td>
-<td align="right">4</td>
-<td align="right">8</td>
-<td align="right">13</td>
-<td align="right">9</td>
-</tr>
-<tr class="even">
-<td align="left">Middle Rio Grande</td>
-<td align="right">0</td>
-<td align="right">1</td>
-<td align="right">11</td>
-<td align="right">12</td>
-<td align="right">10</td>
-</tr>
-<tr class="odd">
-<td align="left">Texoma</td>
-<td align="right">6</td>
-<td align="right">0</td>
-<td align="right">6</td>
-<td align="right">12</td>
-<td align="right">11</td>
-</tr>
-<tr class="even">
-<td align="left">West Central Texas</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">10</td>
-<td align="right">10</td>
-<td align="right">12</td>
-</tr>
-<tr class="odd">
-<td align="left">Permian-Basin</td>
-<td align="right">2</td>
-<td align="right">0</td>
-<td align="right">7</td>
-<td align="right">9</td>
-<td align="right">13</td>
-</tr>
-<tr class="even">
-<td align="left">Coastal Bend</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">8</td>
-<td align="right">8</td>
-<td align="right">14</td>
-</tr>
-<tr class="odd">
-<td align="left">Heart of Texas</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">8</td>
-<td align="right">8</td>
-<td align="right">15</td>
-</tr>
-<tr class="even">
-<td align="left">Northeast Texas</td>
-<td align="right">5</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">8</td>
-<td align="right">16</td>
-</tr>
-<tr class="odd">
-<td align="left">Rural Capital Area</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">8</td>
-<td align="right">8</td>
-<td align="right">17</td>
-</tr>
-<tr class="even">
-<td align="left">Southeast Texas</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">8</td>
-<td align="right">8</td>
-<td align="right">18</td>
-</tr>
-<tr class="odd">
-<td align="left">Central Texas</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">5</td>
-<td align="right">5</td>
-<td align="right">19</td>
-</tr>
-<tr class="even">
-<td align="left">Concho Valley</td>
-<td align="right">2</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">5</td>
-<td align="right">20</td>
-</tr>
-<tr class="odd">
-<td align="left">Gulf Coast</td>
-<td align="right">3</td>
-<td align="right">0</td>
-<td align="right">2</td>
-<td align="right">5</td>
-<td align="right">21</td>
-</tr>
-<tr class="even">
-<td align="left">East Texas</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">4</td>
-<td align="right">4</td>
-<td align="right">22</td>
-</tr>
-<tr class="odd">
-<td align="left">South Texas</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">4</td>
-<td align="right">4</td>
-<td align="right">23</td>
-</tr>
-<tr class="even">
-<td align="left">Brazos Valley</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">3</td>
-<td align="right">24</td>
-</tr>
-<tr class="odd">
-<td align="left">South Plains</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">3</td>
-<td align="right">25</td>
-</tr>
-<tr class="even">
-<td align="left">Tarrant County</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">3</td>
-<td align="right">26</td>
-</tr>
-<tr class="odd">
-<td align="left">Deep East Texas</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">2</td>
-<td align="right">2</td>
-<td align="right">27</td>
-</tr>
-<tr class="even">
-<td align="left">North Central Texas</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">1</td>
-<td align="right">1</td>
-<td align="right">28</td>
-</tr>
-<tr class="odd">
-<td align="left">North Texas</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">1</td>
-<td align="right">1</td>
-<td align="right">29</td>
-</tr>
-</tbody>
-</table>
-<p>Next I wanted to create a table for mentions of risk factors, like
-homelessness.</p>
-<p>This table is also not final. Need to re-do with cleaned text. Alamo
-mentions homeless youth but it’s not being captured.</p>
-<ul>
-<li><p>Homeless includes homeless.</p></li>
-<li><p>HY includes homeless youth.</p></li>
-<li><p>Unhoused includes unhoused.</p></li>
-</ul>
-<p>“Unhoused” is not used at all in any text.</p>
-<p>These homeless counts are for any mention of homeless, not just youth
-related. Even so, only 16 regions have mentions.</p>
-<table>
-<caption>Homeless Mentions</caption>
-<thead>
-<tr class="header">
-<th align="left">Region</th>
-<th align="right">Homeless</th>
-<th align="right">HY</th>
-<th align="right">Unhoused</th>
-<th align="right">Homeless Mentions</th>
-<th align="right">Rank</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">TWC</td>
-<td align="right">18</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">18</td>
-<td align="right">1</td>
-</tr>
-<tr class="even">
-<td align="left">Gulf Coast</td>
-<td align="right">8</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">8</td>
-<td align="right">2</td>
-</tr>
-<tr class="odd">
-<td align="left">Alamo</td>
-<td align="right">5</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">5</td>
-<td align="right">3</td>
-</tr>
-<tr class="even">
-<td align="left">East Texas</td>
-<td align="right">4</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">4</td>
-<td align="right">4</td>
-</tr>
-<tr class="odd">
-<td align="left">Capital Area</td>
-<td align="right">3</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">5</td>
-</tr>
-<tr class="even">
-<td align="left">Middle Rio Grande</td>
-<td align="right">3</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">6</td>
-</tr>
-<tr class="odd">
-<td align="left">Northeast Texas</td>
-<td align="right">3</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">7</td>
-</tr>
-<tr class="even">
-<td align="left">Panhandle</td>
-<td align="right">2</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">8</td>
-</tr>
-<tr class="odd">
-<td align="left">Brazos Valley</td>
-<td align="right">2</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">2</td>
-<td align="right">9</td>
-</tr>
-<tr class="even">
-<td align="left">Cameron</td>
-<td align="right">2</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">2</td>
-<td align="right">10</td>
-</tr>
-<tr class="odd">
-<td align="left">Golden Crescent</td>
-<td align="right">2</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">2</td>
-<td align="right">11</td>
-</tr>
-<tr class="even">
-<td align="left">Permian-Basin</td>
-<td align="right">2</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">2</td>
-<td align="right">12</td>
-</tr>
-<tr class="odd">
-<td align="left">West Central Texas</td>
-<td align="right">2</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">2</td>
-<td align="right">13</td>
-</tr>
-<tr class="even">
-<td align="left">Deep East Texas</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">1</td>
-<td align="right">14</td>
-</tr>
-<tr class="odd">
-<td align="left">Heart of Texas</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">1</td>
-<td align="right">15</td>
-</tr>
-<tr class="even">
-<td align="left">South Plains</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">1</td>
-<td align="right">16</td>
-</tr>
-<tr class="odd">
-<td align="left">Texoma</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">1</td>
-<td align="right">17</td>
-</tr>
-</tbody>
-</table>
+<p>The TidyText R package is being utilized for most of this analysis:
+<a href="https://www.tidytextmining.com/tidytext" class="uri">https://www.tidytextmining.com/tidytext</a></p>
 </div>
 <div id="word-count" class="section level1">
 <h1>Word Count</h1>
@@ -1555,41 +1130,14 @@ is tricky otherwise (both “out” and “of” are stop words.)</p>
 <p>I think “post exit youth” and also “former foster youth” are
 interesting. Is disability a risk factor for OY?</p>
 </div>
-</div>
-<div id="final-phrase-counts" class="section level1">
-<h1>Final Phrase Counts</h1>
-<p>These phrase counts will be done with clean data and will be more
-accurate than the initial ones I did. - OY includes oppotunity youth and
-OY.</p>
-<ul>
-<li><p>DY includes disconnected youth and DY.</p></li>
-<li><p>OSY includes out of school youth, out-of-school, OSY, OS,
-dropout, and drop out.</p></li>
-</ul>
-<p>Next I wanted to create a table for mentions of risk factors, like
-homelessness.</p>
-<p>This table is also not final. Need to re-do with cleaned text. Alamo
-mentions homeless youth but it’s not being captured.</p>
-<ul>
-<li><p>Homeless includes homeless.</p></li>
-<li><p>HY includes homeless youth.</p></li>
-<li><p>Unhoused includes unhoused.</p></li>
-</ul>
-<p>“Unhoused” is not used at all in any text.</p>
-<p>These homeless counts are for any mention of homeless, not just youth
-related. Even so, only 16 regions have mentions.</p>
-<p>Alamo used the phrase “bachelor’s degree none” at least 88 times,
-which may be related to opportunity youth.</p>
-<div id="amy-start-here" class="section level2">
-<h2>AMY START HERE</h2>
-</div>
-</div>
-<div id="quadgrams" class="section level1">
-<h1>Quadgrams</h1>
+<div id="quadgrams" class="section level2">
+<h2>Quadgrams</h2>
 <p>Alamo used the phrase “on the job training” a total of 107 times in
 their strategic plan.</p>
 <p>Northeast Texas uses OS for out of school.</p>
 <p>TWC uses the word “youths”.</p>
+<p>Here I’m making sure that out of school pertains to youth and not
+after school programs</p>
 <table>
 <caption>Phrases begining with ‘out of school’</caption>
 <thead>
@@ -1678,6 +1226,490 @@ their strategic plan.</p>
 <tr class="even">
 <td align="left">out of schoolout of</td>
 <td align="right">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="final-phrase-counts" class="section level1">
+<h1>Final Phrase Counts</h1>
+<p>These phrase counts will be done with clean data and will be more
+accurate than the initial ones I did.</p>
+<ul>
+<li><p>Opportunity Youth also includes OY.</p></li>
+<li><p>Disconnected Youth also includes DY.</p></li>
+</ul>
+<p>– There are no mentions of “youth that are disconnected”,
+“disconnected teenagers”, “disconnected young people”, or “youth
+disconnection”</p>
+<ul>
+<li>Out of School includes out of school youth, out of school youths,
+OSY, OS, dropout, drop out, dropouts, and drop out of school.</li>
+</ul>
+<p>– “nor in school” had zero mentions</p>
+<p>Alamo used the phrase “bachelor’s degree none” at least 88 times,
+which may be related to opportunity youth.</p>
+<table>
+<caption>Any Related Opportunity Youth Mentions</caption>
+<colgroup>
+<col width="25%" />
+<col width="18%" />
+<col width="20%" />
+<col width="14%" />
+<col width="15%" />
+<col width="5%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Region</th>
+<th align="right">Opportunity Youth</th>
+<th align="right">Disconnected Youth</th>
+<th align="right">Out of School</th>
+<th align="right">Total Mentions</th>
+<th align="right">Rank</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">TWC</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">36</td>
+<td align="right">37</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Greater Dallas</td>
+<td align="right">26</td>
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">33</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Capital Area</td>
+<td align="right">20</td>
+<td align="right">0</td>
+<td align="right">5</td>
+<td align="right">25</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">Borderplex</td>
+<td align="right">5</td>
+<td align="right">2</td>
+<td align="right">11</td>
+<td align="right">18</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Panhandle</td>
+<td align="right">3</td>
+<td align="right">6</td>
+<td align="right">9</td>
+<td align="right">18</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">Golden Crescent</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">14</td>
+<td align="right">17</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="left">Cameron</td>
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="right">13</td>
+<td align="right">15</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="left">Middle Rio Grande</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">11</td>
+<td align="right">13</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="left">Alamo</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">8</td>
+<td align="right">11</td>
+<td align="right">9</td>
+</tr>
+<tr class="even">
+<td align="left">Southeast Texas</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">10</td>
+<td align="right">11</td>
+<td align="right">10</td>
+</tr>
+<tr class="odd">
+<td align="left">Gulf Coast</td>
+<td align="right">7</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">10</td>
+<td align="right">11</td>
+</tr>
+<tr class="even">
+<td align="left">West Central Texas</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">8</td>
+<td align="right">10</td>
+<td align="right">12</td>
+</tr>
+<tr class="odd">
+<td align="left">Heart of Texas</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">8</td>
+<td align="right">8</td>
+<td align="right">13</td>
+</tr>
+<tr class="even">
+<td align="left">Permian-Basin</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">7</td>
+<td align="right">7</td>
+<td align="right">14</td>
+</tr>
+<tr class="odd">
+<td align="left">Coastal Bend</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">6</td>
+<td align="right">6</td>
+<td align="right">15</td>
+</tr>
+<tr class="even">
+<td align="left">East Texas</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">6</td>
+<td align="right">16</td>
+</tr>
+<tr class="odd">
+<td align="left">Rural Capital Area</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">4</td>
+<td align="right">6</td>
+<td align="right">17</td>
+</tr>
+<tr class="even">
+<td align="left">South Plains</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">6</td>
+<td align="right">18</td>
+</tr>
+<tr class="odd">
+<td align="left">Brazos Valley</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">5</td>
+<td align="right">5</td>
+<td align="right">19</td>
+</tr>
+<tr class="even">
+<td align="left">Lower Rio Grande Valley</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">5</td>
+<td align="right">5</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">Texoma</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="right">5</td>
+<td align="right">21</td>
+</tr>
+<tr class="even">
+<td align="left">Concho Valley</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">4</td>
+<td align="right">22</td>
+</tr>
+<tr class="odd">
+<td align="left">Northeast Texas</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">4</td>
+<td align="right">23</td>
+</tr>
+<tr class="even">
+<td align="left">South Texas</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">4</td>
+<td align="right">24</td>
+</tr>
+<tr class="odd">
+<td align="left">Central Texas</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+<td align="right">25</td>
+</tr>
+<tr class="even">
+<td align="left">Deep East Texas</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="right">26</td>
+</tr>
+<tr class="odd">
+<td align="left">Tarrant County</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">27</td>
+</tr>
+<tr class="even">
+<td align="left">North Central Texas</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">28</td>
+</tr>
+<tr class="odd">
+<td align="left">North Texas</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">29</td>
+</tr>
+</tbody>
+</table>
+<p>Next I wanted to create a table for mentions of risk factors, like
+homelessness.</p>
+<table>
+<caption>Words following homeless (with more than two
+mentions)</caption>
+<thead>
+<tr class="header">
+<th align="left">bigram</th>
+<th align="right">homeless</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">homeless individuals</td>
+<td align="right">18</td>
+</tr>
+<tr class="even">
+<td align="left">homeless and</td>
+<td align="right">7</td>
+</tr>
+<tr class="odd">
+<td align="left">homeless or</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">homeless shelters</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">homeless children</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">homeless youth</td>
+<td align="right">3</td>
+</tr>
+</tbody>
+</table>
+<p>Only three regions directly mention homeless youth. One example is
+the Panhandle:</p>
+<p>“In addition to continuing to serve low-income youth,
+<homeless youth>, youth who have disabilities, foster youth, and youth
+who have barriers to employment, refocusing efforts to outreach and
+<em>engage out of school youth in successful work-based training
+opportunities is the primary goal of the PWDB</em>, related to youth
+services.”</p>
+<p>The homeless counts below are for any mention of homeless, not just
+youth related. Even so, only 21 regions have mentions.</p>
+<ul>
+<li><p>Homeless includes homeless and homelessness.</p></li>
+<li><p>“Unhoused” is not used at all in any text.</p></li>
+</ul>
+<table>
+<caption>Homeless Mentions</caption>
+<thead>
+<tr class="header">
+<th align="left">Region</th>
+<th align="right">Homeless</th>
+<th align="right">Rank</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">TWC</td>
+<td align="right">25</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Gulf Coast</td>
+<td align="right">13</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Alamo</td>
+<td align="right">6</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">Texoma</td>
+<td align="right">6</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">East Texas</td>
+<td align="right">5</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">Golden Crescent</td>
+<td align="right">4</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="left">Northeast Texas</td>
+<td align="right">4</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="left">Cameron</td>
+<td align="right">3</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="left">Capital Area</td>
+<td align="right">3</td>
+<td align="right">9</td>
+</tr>
+<tr class="even">
+<td align="left">Middle Rio Grande</td>
+<td align="right">3</td>
+<td align="right">10</td>
+</tr>
+<tr class="odd">
+<td align="left">West Central Texas</td>
+<td align="right">3</td>
+<td align="right">11</td>
+</tr>
+<tr class="even">
+<td align="left">Borderplex</td>
+<td align="right">2</td>
+<td align="right">12</td>
+</tr>
+<tr class="odd">
+<td align="left">Brazos Valley</td>
+<td align="right">2</td>
+<td align="right">13</td>
+</tr>
+<tr class="even">
+<td align="left">Concho Valley</td>
+<td align="right">2</td>
+<td align="right">14</td>
+</tr>
+<tr class="odd">
+<td align="left">Heart of Texas</td>
+<td align="right">2</td>
+<td align="right">15</td>
+</tr>
+<tr class="even">
+<td align="left">Panhandle</td>
+<td align="right">2</td>
+<td align="right">16</td>
+</tr>
+<tr class="odd">
+<td align="left">Permian-Basin</td>
+<td align="right">2</td>
+<td align="right">17</td>
+</tr>
+<tr class="even">
+<td align="left">Deep East Texas</td>
+<td align="right">1</td>
+<td align="right">18</td>
+</tr>
+<tr class="odd">
+<td align="left">Rural Capital Area</td>
+<td align="right">1</td>
+<td align="right">19</td>
+</tr>
+<tr class="even">
+<td align="left">South Plains</td>
+<td align="right">1</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">Tarrant County</td>
+<td align="right">1</td>
+<td align="right">21</td>
+</tr>
+<tr class="even">
+<td align="left">Central Texas</td>
+<td align="right">0</td>
+<td align="right">22</td>
+</tr>
+<tr class="odd">
+<td align="left">Coastal Bend</td>
+<td align="right">0</td>
+<td align="right">23</td>
+</tr>
+<tr class="even">
+<td align="left">Greater Dallas</td>
+<td align="right">0</td>
+<td align="right">24</td>
+</tr>
+<tr class="odd">
+<td align="left">Lower Rio Grande Valley</td>
+<td align="right">0</td>
+<td align="right">25</td>
+</tr>
+<tr class="even">
+<td align="left">North Central Texas</td>
+<td align="right">0</td>
+<td align="right">26</td>
+</tr>
+<tr class="odd">
+<td align="left">North Texas</td>
+<td align="right">0</td>
+<td align="right">27</td>
+</tr>
+<tr class="even">
+<td align="left">South Texas</td>
+<td align="right">0</td>
+<td align="right">28</td>
+</tr>
+<tr class="odd">
+<td align="left">Southeast Texas</td>
+<td align="right">0</td>
+<td align="right">29</td>
 </tr>
 </tbody>
 </table>
